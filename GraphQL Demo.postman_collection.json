@@ -1,0 +1,447 @@
+{
+	"info": {
+		"_postman_id": "9dc6105f-836f-4200-a932-91ed2eeee368",
+		"name": "GraphQL Demo",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Create a Keyspace [NOT SUPPORTED]",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-Cassandra-Token",
+						"value": "{{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation createKsLibrary {\n  createKeyspace(name:\"library\", replicas: 1)\n}",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "https://{{db}}-{{region}}.apps.astra.datastax.com/api/graphql-schema",
+					"protocol": "https",
+					"host": [
+						"{{db}}-{{region}}",
+						"apps",
+						"astra",
+						"datastax",
+						"com"
+					],
+					"path": [
+						"api",
+						"graphql-schema"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create two tables",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-Cassandra-Token",
+						"value": "{{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation createTables {\n  book: createTable(\n    keyspaceName:\"library\",\n    tableName:\"book\",\n    partitionKeys: [ # The keys required to access your data\n      { name: \"title\", type: {basic: TEXT} }\n    ]\n    clusteringKeys: [\n      { name: \"author\", type: {basic: TEXT} }\n    ]\n        values: [\n      { name: \"isbn\", type: {basic: TEXT} }\n        ]\n  )\n  reader: createTable(\n    keyspaceName:\"library\",\n    tableName:\"reader\",\n    partitionKeys: [\n      { name: \"name\", type: {basic: TEXT} }\n    ]\n    clusteringKeys: [ # Secondary key used to access values within the partition\n      { name: \"user_id\", type: {basic: UUID}, order: \"ASC\" }\n        ]\n    values: [\n      { name: \"birthdate\", type: {basic: DATE} }\n      { name: \"email\", type: {basic: SET, info:{ subTypes: [ { basic: TEXT } ] } } }\n    ]\n  )\n}",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "https://{{db}}-{{region}}.apps.astra.datastax.com/api/graphql-schema",
+					"protocol": "https",
+					"host": [
+						"{{db}}-{{region}}",
+						"apps",
+						"astra",
+						"datastax",
+						"com"
+					],
+					"path": [
+						"api",
+						"graphql-schema"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create two tables using IF NOT EXISTS",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-Cassandra-Token",
+						"value": "{{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation createTableIfNotExists {\n  magazine: createTable(\n    keyspaceName:\"library\",\n    tableName:\"magazine\",\n    partitionKeys: [ # The keys required to access your data\n      { name: \"title\", type: {basic: TEXT} }\n    ]\n    clusteringKeys: [ # Secondary key used to access values within the partition\n      { name: \"pub_yr\", type: {basic: INT}, order: \"ASC\" }\n      { name: \"pub_mon\", type: {basic: INT} }\n      { name: \"mag_id\", type: {basic: INT} }\n    ],\n    ifNotExists: true,\n    values: [ # The values associated with the keys\n      { name: \"editor\", type: {basic: TEXT} }\n    ]\n  )\n  article: createTable(\n    keyspaceName:\"library\",\n    tableName:\"article\",\n    partitionKeys: [ # The keys required to access your data\n      { name: \"title\", type: {basic: TEXT} }\n    ]\n    clusteringKeys: [ # Secondary key used to access values within the partition\n      { name: \"mtitle\", type: {basic: TEXT} }\n    ],\n    ifNotExists: true,\n    values: [ # The values associated with the keys\n      { name: \"authors\", type: {basic:LIST, info:{ subTypes: [ { basic: TEXT } ] } } }\n    ]\n  )\n}",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "https://{{db}}-{{region}}.apps.astra.datastax.com/api/graphql-schema",
+					"protocol": "https",
+					"host": [
+						"{{db}}-{{region}}",
+						"apps",
+						"astra",
+						"datastax",
+						"com"
+					],
+					"path": [
+						"api",
+						"graphql-schema"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Insert multiple rows",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-Cassandra-Token",
+						"value": "{{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation insert2Books {\n  moby: insertbook(value: {title:\"Moby Dick\", author:\"Herman Melville\"}) {\n    value {\n      title\n    }\n  }\n  catch22: insertbook(value: {title:\"Catch-22\", author:\"Joseph Heller\"}) {\n    value {\n      title\n    }\n  }\n    nativeson: insertbook(value: {title:\"Native Son\", author:\"Richard Wright\"}) {\n    value {\n      title\n    }\n  }\n}",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "https://{{db}}-{{region}}.apps.astra.datastax.com/api/graphql/{{keyspace}}",
+					"protocol": "https",
+					"host": [
+						"{{db}}-{{region}}",
+						"apps",
+						"astra",
+						"datastax",
+						"com"
+					],
+					"path": [
+						"api",
+						"graphql",
+						"{{keyspace}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update a single row",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-Cassandra-Token",
+						"value": "{{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation updateOneBook {\n  moby: updatebook(value: {title:\"Moby Dick\", author:\"Herman Melville\", isbn: \"9780140861723\"}, ifExists: true ) {\n    value {\n      title\n      author\n      isbn\n    }\n  }\n}",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "https://{{db}}-{{region}}.apps.astra.datastax.com/api/graphql/{{keyspace}}",
+					"protocol": "https",
+					"host": [
+						"{{db}}-{{region}}",
+						"apps",
+						"astra",
+						"datastax",
+						"com"
+					],
+					"path": [
+						"api",
+						"graphql",
+						"{{keyspace}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Insert multiple rows - Error Path",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-Cassandra-Token",
+						"value": "{{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation insert2Books {\n  moby: insertbook(value: {title:\"Catch-22\", author:\"Old Author\"}) {\n    value {\n      title\n    }\n  }\n  catch22: insertbook(value: {title:\"Catch-22\", author:\"Joseph Heller\"}) {\n    value {\n      title\n    }\n  }\n}",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "https://{{db}}-{{region}}.apps.astra.datastax.com/api/graphql/{{keyspace}}",
+					"protocol": "https",
+					"host": [
+						"{{db}}-{{region}}",
+						"apps",
+						"astra",
+						"datastax",
+						"com"
+					],
+					"path": [
+						"api",
+						"graphql",
+						"{{keyspace}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get one result using the primary key",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-Cassandra-Token",
+						"value": "{{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "# get one book using the primary key title with a value\nquery oneBook {\n    book (value: {title:\"Catch-22\"} options:{limit: 1}) {\n      values {\n        title\n        author\n      }\n    }\n}",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "https://{{db}}-{{region}}.apps.astra.datastax.com/api/graphql/{{keyspace}}",
+					"protocol": "https",
+					"host": [
+						"{{db}}-{{region}}",
+						"apps",
+						"astra",
+						"datastax",
+						"com"
+					],
+					"path": [
+						"api",
+						"graphql",
+						"{{keyspace}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get multiple results using an IN filter clause",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-Cassandra-Token",
+						"value": "{{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "query ThreeBooks {\n  book(filter: { title: { in: [\"Native Son\", \"Moby Dick\", \"Catch-22\"] } } ) {\n      values {\n        title\n        author\n     }\n   }\n}",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "https://{{db}}-{{region}}.apps.astra.datastax.com/api/graphql/{{keyspace}}",
+					"protocol": "https",
+					"host": [
+						"{{db}}-{{region}}",
+						"apps",
+						"astra",
+						"datastax",
+						"com"
+					],
+					"path": [
+						"api",
+						"graphql",
+						"{{keyspace}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get multiple results with Pagination",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-Cassandra-Token",
+						"value": "{{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "query ThreeBooks {\n  book(filter: { title: { in: [\"Native Son\", \"Moby Dick\", \"Catch-22\"] } } options:{pageSize: 1, pageState: \"CENhdGNoLTIyDwANSm9zZXBoIEhlbGxlcvB////+8H////4=\" } ) {\n      values {\n        title\n        author\n     }\n     pageState\n   }\n}",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "https://{{db}}-{{region}}.apps.astra.datastax.com/api/graphql/{{keyspace}}",
+					"protocol": "https",
+					"host": [
+						"{{db}}-{{region}}",
+						"apps",
+						"astra",
+						"datastax",
+						"com"
+					],
+					"path": [
+						"api",
+						"graphql",
+						"{{keyspace}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Drop table",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-Cassandra-Token",
+						"type": "text",
+						"value": "{{token}}"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation dropTableBook {\n  dropTable(keyspaceName:\"library\",\n    tableName:\"article\",\n  ifExists: true)\n}",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "https://{{db}}-{{region}}.apps.astra.datastax.com/api/graphql-schema",
+					"protocol": "https",
+					"host": [
+						"{{db}}-{{region}}",
+						"apps",
+						"astra",
+						"datastax",
+						"com"
+					],
+					"path": [
+						"api",
+						"graphql-schema"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get the magazine table schema",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-Cassandra-Token",
+						"value": "{{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "# retrieve schema for a table from the database\nquery GetTables {\n  keyspace(name: \"library\") {\n      name\n      table (name: \"magazine\") {\n          name\n          columns {\n              name\n              kind\n              type {\n                  basic\n                  info {\n                      name\n                  }\n              }\n          }\n      }\n  }\n}",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "https://{{db}}-{{region}}.apps.astra.datastax.com/api/graphql-schema",
+					"protocol": "https",
+					"host": [
+						"{{db}}-{{region}}",
+						"apps",
+						"astra",
+						"datastax",
+						"com"
+					],
+					"path": [
+						"api",
+						"graphql-schema"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Drop a column from a table",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-Cassandra-Token",
+						"value": "{{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "# drop a column format from a table\nmutation dropColumnFormat {\n    alterTableDrop(\n        keyspaceName:\"library\",\n        tableName:\"magazine\",\n        toDrop:[\"editor\"]\n  )\n}",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "https://{{db}}-{{region}}.apps.astra.datastax.com/api/graphql-schema",
+					"protocol": "https",
+					"host": [
+						"{{db}}-{{region}}",
+						"apps",
+						"astra",
+						"datastax",
+						"com"
+					],
+					"path": [
+						"api",
+						"graphql-schema"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
